@@ -33,12 +33,53 @@ ARCHITECTURE rtl OF timer_counter IS
 
 SIGNAL counter_value_s   : STD_LOGIC_VECTOR(7 DOWNTO 0);
 SIGNAL counter_for_min_s : STD_LOGIC_VECTOR(7 DOWNTO 0);
+SIGNAL counter_for_min_s_next : STD_LOGIC_VECTOR(7 DOWNTO 0);
 SIGNAL counter_for_h_s   : STD_LOGIC_VECTOR(7 DOWNTO 0);
-begin
-
+SIGNAL counter_for_h_s_next   : STD_LOGIC_VECTOR(7 DOWNTO 0);
+SIGNAL counter_value_s_next:STD_LOGIC_VECTOR(7 DOWNTO 0);
+SIGNAL neki_counter:STD_LOGIC_VECTOR(7 DOWNTO 0);
+SIGNAL neki_counter_next:STD_LOGIC_VECTOR(7 DOWNTO 0);
+SIGNAL jedna_sekunda: STD_LOGIC;
 -- DODATI :
 
 -- sistem za brojane sekundi,minuta i sata kao sistem za generisanje izlaza u odnosu na pritisnuti taster
 -- ako nije pritisnut nijedan taster onda se prikazuju sekunde
+BEGIN
+process(clk_i, rst_i) begin
+	if(rst_i='1') then
+		counter_value_s<=(others=>'0');
+		counter_for_min_s<=(others=>'0');
+		counter_for_h_s<=(others=>'0');
+		neki_counter<=(others=>'0');
+	elsif(rising_edge(clk_i)) then
+		counter_value_s<=counter_value_s_next;
+		counter_for_min_s<=counter_for_min_s_next;
+		counter_for_h_s<=counter_for_h_s_next;
+		neki_counter<=neki_counter_next;
+	end if;
+end process;
 
+neki_counter_next<=(others=>'0') when neki_counter=100 else neki_counter+1 when one_sec_i='1';
+jedna_sekunda<='1' when neki_counter=100 else '0';
+process(jedna_sekunda, counter_value_s, counter_for_min_s, counter_for_h_s) begin
+	if(jedna_sekunda='1') then
+		if(counter_value_s=59) then
+			counter_value_s_next<=(others=>'0');
+			if(counter_for_min_s=59) then
+				counter_for_min_s_next<=(others=>'0');
+				if(counter_for_h_s=23) then
+					counter_for_h_s_next<=(others=>'0');
+				else
+				counter_for_h_s_next<=counter_for_h_s+1;
+				end if;
+			else
+				counter_for_min_s_next<=counter_for_min_s+1;
+			end if;
+		else
+			counter_value_s_next<=counter_value_s+1;
+		end if;
+	else
+		counter_value_s_next<=counter_value_s;
+	end if;
+end process;
 END rtl;
